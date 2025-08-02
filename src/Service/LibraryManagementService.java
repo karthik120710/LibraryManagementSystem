@@ -20,76 +20,139 @@ public class LibraryManagementService {
         this.activeBorrowing = new HashMap<>();
     }
 
-    // Search Method
-    public Book searchBook(String title){
-        for(Book book:books){
-            if(book.getTitle().equals(title)){
+    // Search Methods
+    public Book searchBook(String title) {
+        if (title == null || title.trim().isEmpty()) {
+            return null;
+        }
+        for (Book book : books) {
+            if (book.getTitle().equalsIgnoreCase(title.trim())) {
                 return book;
             }
         }
         return null;
     }
 
-    // Memeber Method
-    public boolean borrowBook(Member member, String bookId){
-        for(Book book:books){
-            if(book.getBook_id().equals(bookId) && book.getMember()==null){
-                book.setMember(member);
-                activeBorrowing.put(book,member);
-                return true;
+    public Book findBookById(String bookId) {
+        if (bookId == null || bookId.trim().isEmpty()) {
+            return null;
+        }
+        for (Book book : books) {
+            if (book.getBookId().equals(bookId.trim())) {
+                return book;
             }
         }
-
-        return false;
+        return null;
     }
 
-    public boolean returnBook(Member member, String bookId){
-        Book returnBook=null;
-        for(Book book:books){
-            if(book.getBook_id()==bookId){
-                returnBook=book;
+    public Member findMemberById(String memberId) {
+        if (memberId == null || memberId.trim().isEmpty()) {
+            return null;
+        }
+        for (Member member : members) {
+            if (member.getId().equals(memberId.trim())) {
+                return member;
             }
         }
-        if(returnBook != null && returnBook.getMember() != null){
-            returnBook.setMember(null);
-            activeBorrowing.remove(returnBook);
+        return null;
+    }
+
+    public Librarian findLibrarianById(String librarianId) {
+        if (librarianId == null || librarianId.trim().isEmpty()) {
+            return null;
+        }
+        for (Librarian librarian : librarians) {
+            if (librarian.getId().equals(librarianId.trim())) {
+                return librarian;
+            }
+        }
+        return null;
+    }
+
+    // Member Methods
+    public boolean borrowBook(Member member, String bookId) {
+        if (member == null || bookId == null || bookId.trim().isEmpty()) {
+            return false;
+        }
+        
+        Book book = findBookById(bookId.trim());
+        if (book != null && book.getMember() == null) {
+            book.setMember(member);
+            activeBorrowing.put(book, member);
             return true;
         }
         return false;
     }
 
-    //Librarian operation
+    public boolean returnBook(Member member, String bookId) {
+        if (member == null || bookId == null || bookId.trim().isEmpty()) {
+            return false;
+        }
+        
+        Book book = findBookById(bookId.trim());
+        if (book != null && book.getMember() != null && 
+            book.getMember().getId().equals(member.getId())) {
+            book.setMember(null);
+            activeBorrowing.remove(book);
+            return true;
+        }
+        return false;
+    }
 
-    public boolean addBook(Book book,Librarian librarian){
-        if(librarians.contains(librarian) && !books.contains(book)){
+    // Librarian Operations
+    public boolean addBook(Book book, Librarian librarian) {
+        if (book == null || librarian == null) {
+            return false;
+        }
+        
+        if (librarians.contains(librarian) && findBookById(book.getBookId()) == null) {
             books.add(book);
             return true;
         }
         return false;
     }
 
-    public boolean removeBook(Book book,Librarian librarian){
-        if(librarians.contains(librarian) && books.contains(book)){
+    public boolean removeBook(Book book, Librarian librarian) {
+        if (book == null || librarian == null) {
+            return false;
+        }
+        
+        if (librarians.contains(librarian) && books.contains(book) && book.getMember() == null) {
             books.remove(book);
+            activeBorrowing.remove(book);
             return true;
         }
         return false;
     }
 
-    public boolean addMember(Member member){
-        if(!members.contains(member)){
+    public boolean addMember(Member member) {
+        if (member == null || member.getId() == null || member.getName() == null) {
+            return false;
+        }
+        
+        if (findMemberById(member.getId()) == null) {
             members.add(member);
             return true;
         }
         return false;
     }
 
-    public boolean removeMember(Member member){
-        if (members.contains(member)){
-            members.remove(member);
-            return  true;
+    public boolean removeMember(Member member) {
+        if (member == null) {
+            return false;
         }
-
+        
+        // Check if member has any borrowed books
+        for (Book book : books) {
+            if (book.getMember() != null && book.getMember().getId().equals(member.getId())) {
+                return false; // Cannot remove member with borrowed books
+            }
+        }
+        
+        if (members.contains(member)) {
+            members.remove(member);
+            return true;
+        }
         return false;
     }
 }

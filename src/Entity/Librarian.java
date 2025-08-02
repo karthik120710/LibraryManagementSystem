@@ -1,9 +1,10 @@
 package Entity;
 
-public class Librarian extends  Member{
+public class Librarian extends Member {
     private String personalId;
-    public Librarian(String name,String id){
-        super(name,id);
+    
+    public Librarian(String name, String id) {
+        super(name, id);
     }
 
     public String getPersonalId() {
@@ -11,6 +12,17 @@ public class Librarian extends  Member{
     }
 
     public void setPersonalId(String personalId) {
-        this.personalId = personalId;
+        if (personalId != null) {
+            this.personalId = personalId.trim();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Librarian{" +
+                "id='" + getId() + '\'' +
+                ", name='" + getName() + '\'' +
+                ", personalId='" + personalId + '\'' +
+                '}';
     }
 }
